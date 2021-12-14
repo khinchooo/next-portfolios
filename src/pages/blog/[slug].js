@@ -1,11 +1,10 @@
 import Image from 'next/image'
 import matter from 'gray-matter'
-import ReactMarkdown from "react-markdown"
+import ReactMarkdown from 'react-markdown'
 import Layout from "../../components/layout"
 import * as style from "../../styles/singleBlog.module.scss"
 
 const SingleBlog = (props) => {
-  console.log(props)
   return (
     <Layout>
       <div className={style.hero}>
@@ -20,6 +19,7 @@ const SingleBlog = (props) => {
   )
 }
 export default SingleBlog
+
 export async function getStaticPaths() {
   const blogSlugs = ((context) => {
     const keys = context.keys()
