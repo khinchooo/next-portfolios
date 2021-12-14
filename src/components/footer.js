@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from 'next/link'
 import * as style from "../styles/common.module.scss"
 
 const Footer = () => {
