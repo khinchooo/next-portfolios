@@ -1,13 +1,16 @@
-import matter from "gray-matter"
-import Image from "next/image"
-import Layout from "../../components/layout"
+import Image from 'next/image'
 import ReactMarkdown from 'react-markdown'
+import Layout from "../../components/layout"
+import PrevNext from "../../components/prevNext"
+import Seo from "../../components/seo"
 import * as style from "../../styles/singleBlog.module.scss"
+import { getAllBlogs, getSingleBlog } from "../../utils/mdQueries"
 
-const SingleBlog = ({ frontmatter, markdownBody }) => {
-  const { title, date, image } = frontmatter
+const SingleBlog = ({ frontmatter, markdownBody, prev, next }) => {
+  const { title, date, excerpt, image } = frontmatter
   return (
     <Layout>
+      <Seo title={title} description={excerpt} />
       <div className={style.hero}>
         <Image src={image} alt="blog-image" height="500" width="1000" />
       </div>
@@ -19,6 +22,7 @@ const SingleBlog = ({ frontmatter, markdownBody }) => {
             {markdownBody}
           </ReactMarkdown>
         </div>
+        <PrevNext prev={prev} next={next} />
       </div>
     </Layout>
   )
@@ -27,17 +31,8 @@ const SingleBlog = ({ frontmatter, markdownBody }) => {
 export default SingleBlog
 
 export async function getStaticPaths() {
-  const blogSlugs = ((context) => {
-    const keys = context.keys()
-    const data = keys.map((key, index) => {
-      let slug = key.replace(/^.*[\\\/]/, '').slice(0, -3)
-
-      return slug
-    })
-    return data
-  })(require.context('../../data', true, /\.md$/))
-
-  const paths = blogSlugs.map((blogSlug) => `/blog/${blogSlug}`)
+  const { orderedBlogs } = await getAllBlogs()
+  const paths = orderedBlogs.map((orderedBlog) => `/blog/${orderedBlog.slug}`)
 
   return {
     paths: paths,
@@ -46,14 +41,18 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps(context) {
-  const { slug } = context.params
-  const data = await import(`../../data/${slug}.md`)
-  const singleDocument = matter(data.default)
+  const { singleDocument } = await getSingleBlog(context)
+
+  const { orderedBlogs } = await getAllBlogs()
+  const prev = orderedBlogs.filter(orderedBlog => orderedBlog.frontmatter.id === singleDocument.data.id - 1)
+  const next = orderedBlogs.filter(orderedBlog => orderedBlog.frontmatter.id === singleDocument.data.id + 1)
 
   return {
     props: {
       frontmatter: singleDocument.data,
       markdownBody: singleDocument.content,
+      prev,
+      next,
     }
   }
 }
